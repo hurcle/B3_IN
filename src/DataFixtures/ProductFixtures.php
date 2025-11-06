@@ -7,20 +7,24 @@ use App\Entity\Category;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
+use App\Service\ProductManager;
 
 class ProductFixtures extends Fixture implements DependentFixtureInterface
 {
+    private $productManager;
+
+    public function __construct(ProductManager $productManager) {
+        $this->productManager = $productManager;
+    }
+
     public function load(ObjectManager $manager): void
     {
         for ($i = 0; $i < 20; $i++) {
-            $product = new Product();
-            $product->setName('product '. $i);
-            $product->setUnitPrice(mt_rand(10, 100));
-            $product->setCreatedAt(new \Datetime('now'));
-            $product->setStorage(10);
-            $category = $manager->getRepository(Category::class)->find(rand(1, 5));
+            $name       = 'product '. $i;
+            $storage    = 10;
+            $category   = $manager->getRepository(Category::class)->find(rand(1, 5));
             $product->setCategory($category);
-            $manager->persist($product);
+            $this->productManager->createProduct($name, $storage, $category, null);
         }
 
         $manager->flush();
